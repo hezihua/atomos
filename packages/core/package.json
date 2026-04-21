@@ -1,0 +1,17 @@
+{
+  "name": "atomos-state",
+  "version": "0.1.0",
+  "description": "A tiny React state management library extracted from react.html",
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "files": [
+    "src",
+    "dist"
+  ],
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0"
+  }
+}
