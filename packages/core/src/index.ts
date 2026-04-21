@@ -1,10 +1,36 @@
 import { useCallback, useRef, useSyncExternalStore } from 'react';
 
-const identity = (value) => value;
+export type EqualityFn<T> = (left: T, right: T) => boolean;
+export type Listener = () => void;
+export type GetState<T> = () => T;
+export type Subscribe = (listener: Listener) => () => void;
+export type StateSlice<T> = T extends object ? T | Partial<T> : T;
+export type StateUpdater<T> = StateSlice<T> | ((state: T) => StateSlice<T>);
+export type SetState<T> = (partial: StateUpdater<T>, replace?: boolean) => T;
+export type StateCreator<T> = (set: SetState<T>, get: GetState<T>) => T;
 
-const isObject = (value) => value !== null && typeof value === 'object';
+export interface StoreApi<T> {
+  getState: GetState<T>;
+  setState: SetState<T>;
+  subscribe: Subscribe;
+}
 
-export const shallow = (left, right) => {
+export interface UseStore<T> {
+  <Selected = T>(
+    selector?: (state: T) => Selected,
+    equalityFn?: EqualityFn<Selected>
+  ): Selected;
+  getState: GetState<T>;
+  setState: SetState<T>;
+  subscribe: Subscribe;
+}
+
+const identity = <T,>(value: T): T => value;
+
+const isObject = (value: unknown): value is Record<PropertyKey, unknown> =>
+  value !== null && typeof value === 'object';
+
+export const shallow = <T,>(left: T, right: T): boolean => {
   if (Object.is(left, right)) {
     return true;
   }
@@ -32,15 +58,17 @@ export const shallow = (left, right) => {
   return true;
 };
 
-export const createStore = (createState) => {
-  let state;
-  const listeners = new Set();
+export const createStore = <T,>(createState: StateCreator<T>): StoreApi<T> => {
+  let state!: T;
+  const listeners = new Set<Listener>();
 
-  const getState = () => state;
+  const getState = (): T => state;
 
-  const setState = (partial, replace = false) => {
+  const setState: SetState<T> = (partial, replace = false) => {
     const nextPartial =
-      typeof partial === 'function' ? partial(state) : partial;
+      typeof partial === 'function'
+        ? (partial as (state: T) => StateSlice<T>)(state)
+        : partial;
 
     if (nextPartial === undefined) {
       return state;
@@ -48,8 +76,8 @@ export const createStore = (createState) => {
 
     const nextState =
       replace || !isObject(state) || !isObject(nextPartial)
-        ? nextPartial
-        : { ...state, ...nextPartial };
+        ? (nextPartial as T)
+        : ({ ...state, ...nextPartial } as T);
 
     if (shallow(state, nextState)) {
       return state;
@@ -60,7 +88,7 @@ export const createStore = (createState) => {
     return state;
   };
 
-  const subscribe = (listener) => {
+  const subscribe: Subscribe = (listener) => {
     listeners.add(listener);
     return () => {
       listeners.delete(listener);
@@ -76,13 +104,16 @@ export const createStore = (createState) => {
   };
 };
 
-export const create = (createState) => {
+export const create = <T,>(createState: StateCreator<T>): UseStore<T> => {
   const store = createStore(createState);
 
-  const useStore = (selector = identity, equalityFn = Object.is) => {
+  const useStore = (<Selected = T>(
+    selector: (state: T) => Selected = identity as (state: T) => Selected,
+    equalityFn: EqualityFn<Selected> = Object.is
+  ): Selected => {
     const selectorRef = useRef(selector);
     const equalityFnRef = useRef(equalityFn);
-    const selectedStateRef = useRef();
+    const selectedStateRef = useRef<Selected>(selector(store.getState()));
     const hasSelectionRef = useRef(false);
 
     selectorRef.current = selector;
@@ -99,7 +130,7 @@ export const create = (createState) => {
     }
 
     const subscribe = useCallback(
-      (notify) =>
+      (notify: Listener) =>
         store.subscribe(() => {
           const nextSelectedState = selectorRef.current(store.getState());
 
@@ -118,7 +149,7 @@ export const create = (createState) => {
     const getSnapshot = useCallback(() => selectedStateRef.current, []);
 
     return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
-  };
+  }) as UseStore<T>;
 
   useStore.getState = store.getState;
   useStore.setState = store.setState;

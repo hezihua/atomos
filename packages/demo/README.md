@@ -10,9 +10,8 @@
 ## 启动
 
 ```bash
-cd packages/demo
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 默认会启动本地开发服务器，你可以在浏览器中看到两个独立的状态卡片：
@@ -25,8 +24,7 @@ npm run dev
 ## 构建
 
 ```bash
-cd packages/demo
-npm run build
+pnpm build
 ```
 
 构建产物会输出到：
@@ -62,15 +60,15 @@ demo 还展示了两个新能力：
 
 这个 demo 没有从 npm 安装 `atomos-state`，而是直接引用本地源码。
 
-在 `vite.config.js` 中通过 alias 把：
+在 `vite.config.ts` 中通过 alias 把：
 
-- `atomos-state` 指向 `../core/src/index.js`
+- `atomos-state` 指向 `../core/src/index.ts`
 
-这样做的好处是你修改 `packages/core/src/index.js` 后，demo 可以立刻使用最新实现。
+这样做的好处是你修改 `packages/core/src/index.ts` 后，demo 可以立刻使用最新实现。
 
 ## 相关文件
 
-- `src/App.jsx`：示例页面和 store 使用方式
-- `src/main.jsx`：React 入口
+- `src/App.tsx`：示例页面和 store 使用方式
+- `src/main.tsx`：React 入口
 - `src/styles.css`：示例样式
-- `vite.config.js`：本地包 alias 配置
+- `vite.config.ts`：本地包 alias 配置

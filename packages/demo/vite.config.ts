@@ -10,7 +10,7 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      'atomos-state': resolve(__dirname, '../core/src/index.js'),
+      'atomos-state': resolve(__dirname, '../core/src/index.ts'),
       react: resolve(__dirname, 'node_modules/react'),
       'react-dom': resolve(__dirname, 'node_modules/react-dom'),
     },

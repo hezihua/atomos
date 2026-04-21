@@ -13,7 +13,7 @@
 如果你把它作为独立包发布，可以这样使用：
 
 ```bash
-npm install atomos-state
+pnpm add atomos-state
 ```
 
 当前仓库里它位于：

@@ -38,19 +38,22 @@
 
 ## 快速开始
 
+### 安装依赖
+
+```bash
+pnpm install
+```
+
 ### 运行 React Demo
 
 ```bash
-cd packages/demo
-npm install
-npm run dev
+pnpm dev
 ```
 
 构建 demo：
 
 ```bash
-cd packages/demo
-npm run build
+pnpm build
 ```
 
 ## 示例代码
@@ -75,13 +78,13 @@ function BearCounter() {
 
 ## 开发说明
 
-当前仓库还没有根级别 workspace 配置，`packages/demo` 是一个独立的 Vite 工程。
+当前仓库使用 `pnpm workspace` 管理 `packages/core` 和 `packages/demo`。
 
-为了让 demo 直接使用本地源码，`packages/demo/vite.config.js` 中通过 alias 将：
+为了让 demo 直接使用本地源码，`packages/demo/vite.config.ts` 中通过 alias 将：
 
-- `atomos-state` 指向 `packages/core/src/index.js`
+- `atomos-state` 指向 `packages/core/src/index.ts`
 
-这意味着你修改 `packages/core/src/index.js` 后，demo 会直接反映最新实现。
+这意味着你修改 `packages/core/src/index.ts` 后，demo 会直接反映最新实现。
 
 提交记录采用手动维护方式，统一写在根目录的 `CHANGELOG.md` 中。
 
@@ -89,7 +92,6 @@ function BearCounter() {
 
 这是一个偏教学和实验性质的仓库，适合继续扩展的方向包括：
 
-- TypeScript 类型声明
 - 单元测试
 - 发布脚本
-- 根目录 monorepo/workspace 配置
+- 更完整的自动化构建流程

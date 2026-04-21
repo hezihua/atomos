@@ -1,6 +1,21 @@
-import { create, shallow } from 'atomos-state';
+import { create, shallow, type SetState } from 'atomos-state';
 
-const createBearState = (set) => ({
+type BearState = {
+  bears: number;
+  honey: number;
+  increaseBears: () => void;
+  increaseHoney: () => void;
+  reset: () => void;
+};
+
+type StatCardProps = {
+  title: string;
+  value: number;
+  actionLabel: string;
+  onAction: () => void;
+};
+
+const createBearState = (set: SetState<BearState>): BearState => ({
   bears: 0,
   honey: 10,
   increaseBears: () => set((state) => ({ bears: state.bears + 1 })),
@@ -10,7 +25,7 @@ const createBearState = (set) => ({
 
 const useBearStore = create(createBearState);
 
-function StatCard({ title, value, actionLabel, onAction }) {
+function StatCard({ title, value, actionLabel, onAction }: StatCardProps) {
   return (
     <section className="card">
       <p className="label">{title}</p>
@@ -38,7 +53,7 @@ export default function App() {
         <p className="eyebrow">atomos-state</p>
         <h1>React demo package</h1>
         <p className="description">
-          This demo consumes the local package from <code>packages/core</code>
+          This demo consumes the local package from <code>packages/core</code>{' '}
           and showcases selector equality plus full state replacement.
         </p>
       </div>
