@@ -20,6 +20,8 @@ npm run dev
 - `Bears`
 - `Honey`
 
+另外还有一个 `Reset Store` 按钮，用来演示整状态替换。
+
 ## 构建
 
 ```bash
@@ -50,6 +52,11 @@ const useBearStore = create((set) => ({
 
 - 一个组件只读取 `bears`
 - 一个组件只读取 `honey`
+
+demo 还展示了两个新能力：
+
+- 使用 `shallow` 组合订阅多个 action，避免无意义更新
+- 使用 `setState(nextState, true)` 执行整状态替换
 
 ## 如何引用 core
 

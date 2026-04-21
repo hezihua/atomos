@@ -25,12 +25,15 @@
 
 - `createStore(createState)`：创建一个原始 store，暴露 `getState`、`setState`、`subscribe`
 - `create(createState)`：创建一个 React Hook，用于在组件中订阅状态
+- `shallow(left, right)`：用于 selector 结果的浅比较
 
 特点：
 
 - API 简单，接近 `create((set) => initialState)` 的使用方式
 - 基于 `useSyncExternalStore` 实现 React 订阅
-- 支持 selector，例如 `useStore((state) => state.count)`
+- 支持 `setState(partial, replace)` 整体替换状态
+- 支持 selector 和自定义 `equalityFn`
+- 内置 `shallow` 用于对象 selector 比较
 - 支持浏览器 UMD 方式和 ESM 方式使用
 
 ## 快速开始
@@ -79,6 +82,8 @@ function BearCounter() {
 - `atomos-state` 指向 `packages/core/src/index.js`
 
 这意味着你修改 `packages/core/src/index.js` 后，demo 会直接反映最新实现。
+
+提交记录采用手动维护方式，统一写在根目录的 `CHANGELOG.md` 中。
 
 ## 当前状态
 

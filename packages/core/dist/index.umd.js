@@ -5,7 +5,39 @@
     global.AtomosState = factory(global.React);
   }
 })(typeof window !== 'undefined' ? window : this, function (React) {
-  const { useSyncExternalStore } = React;
+  const { useCallback, useRef, useSyncExternalStore } = React;
+
+  const identity = (value) => value;
+
+  const isObject = (value) => value !== null && typeof value === 'object';
+
+  const shallow = (left, right) => {
+    if (Object.is(left, right)) {
+      return true;
+    }
+
+    if (!isObject(left) || !isObject(right)) {
+      return false;
+    }
+
+    const leftKeys = Object.keys(left);
+    const rightKeys = Object.keys(right);
+
+    if (leftKeys.length !== rightKeys.length) {
+      return false;
+    }
+
+    for (const key of leftKeys) {
+      if (
+        !Object.prototype.hasOwnProperty.call(right, key) ||
+        !Object.is(left[key], right[key])
+      ) {
+        return false;
+      }
+    }
+
+    return true;
+  };
 
   const createStore = (createState) => {
     let state;
@@ -13,15 +45,24 @@
 
     const getState = () => state;
 
-    const setState = (partial) => {
+    const setState = (partial, replace = false) => {
       const nextPartial =
         typeof partial === 'function' ? partial(state) : partial;
 
-      if (nextPartial == null || typeof nextPartial !== 'object') {
+      if (nextPartial === undefined) {
         return state;
       }
 
-      state = { ...state, ...nextPartial };
+      const nextState =
+        replace || !isObject(state) || !isObject(nextPartial)
+          ? nextPartial
+          : { ...state, ...nextPartial };
+
+      if (shallow(state, nextState)) {
+        return state;
+      }
+
+      state = nextState;
       listeners.forEach((listener) => listener());
       return state;
     };
@@ -45,12 +86,46 @@
   const create = (createState) => {
     const store = createStore(createState);
 
-    const useStore = (selector) =>
-      useSyncExternalStore(
-        store.subscribe,
-        () => (selector ? selector(store.getState()) : store.getState()),
-        () => (selector ? selector(store.getState()) : store.getState())
+    const useStore = (selector = identity, equalityFn = Object.is) => {
+      const selectorRef = useRef(selector);
+      const equalityFnRef = useRef(equalityFn);
+      const selectedStateRef = useRef();
+      const hasSelectionRef = useRef(false);
+
+      selectorRef.current = selector;
+      equalityFnRef.current = equalityFn;
+
+      const currentSelectedState = selector(store.getState());
+
+      if (
+        !hasSelectionRef.current ||
+        !equalityFnRef.current(selectedStateRef.current, currentSelectedState)
+      ) {
+        selectedStateRef.current = currentSelectedState;
+        hasSelectionRef.current = true;
+      }
+
+      const subscribe = useCallback(
+        (notify) =>
+          store.subscribe(() => {
+            const nextSelectedState = selectorRef.current(store.getState());
+
+            if (
+              equalityFnRef.current(selectedStateRef.current, nextSelectedState)
+            ) {
+              return;
+            }
+
+            selectedStateRef.current = nextSelectedState;
+            notify();
+          }),
+        []
       );
+
+      const getSnapshot = useCallback(() => selectedStateRef.current, []);
+
+      return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+    };
 
     useStore.getState = store.getState;
     useStore.setState = store.setState;
@@ -62,5 +137,6 @@
   return {
     createStore,
     create,
+    shallow,
   };
 });

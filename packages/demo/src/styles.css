@@ -24,6 +24,12 @@ button {
   cursor: pointer;
 }
 
+.secondaryButton {
+  color: #dbeafe;
+  background: rgba(125, 211, 252, 0.12);
+  border: 1px solid rgba(125, 211, 252, 0.28);
+}
+
 .page {
   min-height: 100vh;
   padding: 4rem 1.5rem;
@@ -48,6 +54,11 @@ button {
   max-width: 560px;
   line-height: 1.6;
   color: #bfd3ea;
+}
+
+.toolbar {
+  max-width: 720px;
+  margin: 0 auto 1rem;
 }
 
 .grid {

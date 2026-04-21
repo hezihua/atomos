@@ -29,7 +29,7 @@ packages/core
 创建一个原始 store，不依赖 React 组件本身，返回：
 
 - `getState()`
-- `setState(partial)`
+- `setState(partial, replace?)`
 - `subscribe(listener)`
 
 适合你需要在 React 外部直接操作 store 的场景。
@@ -66,6 +66,28 @@ function BearCounter() {
 }
 ```
 
+## `setState` 行为
+
+`setState` 默认采用浅合并：
+
+```js
+useBearStore.setState({ bears: 1 });
+```
+
+如果你需要整状态替换，可以传第二个参数 `true`：
+
+```js
+useBearStore.setState(
+  {
+    bears: 0,
+    honey: 10,
+  },
+  true
+);
+```
+
+另外，如果更新前后浅比较没有发生变化，store 不会触发订阅通知。
+
 ## selector 说明
 
 推荐优先使用 selector：
@@ -82,6 +104,22 @@ const state = useBearStore();
 
 这样可以让组件只订阅自己真正关心的状态片段，减少不必要的重渲染。
 
+## equalityFn 与 `shallow`
+
+`useStore` 支持第二个参数 `equalityFn`：
+
+```js
+const actions = useBearStore(
+  (state) => ({
+    increaseBears: state.increaseBears,
+    increaseHoney: state.increaseHoney,
+  }),
+  shallow
+);
+```
+
+库内置导出了 `shallow`，适合对象或数组风格的 selector 结果比较。
+
 ## 浏览器直接使用
 
 仓库中已经提供了一个 UMD 文件：
@@ -95,7 +133,7 @@ packages/core/dist/index.umd.js
 ```html
 <script src="./packages/core/dist/index.umd.js"></script>
 <script>
-  const { create } = AtomosState;
+  const { create, shallow } = AtomosState;
 </script>
 ```
 
@@ -117,4 +155,4 @@ react ^18.0.0 || ^19.0.0
 - 持久化
 - devtools 集成
 - 内建 TypeScript 类型声明
-- 更细粒度的更新比较逻辑
+- 服务端场景下更完整的兼容性打磨
